@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('key') !== 'syakyo2025') {
+                document.write('<div style="padding:20px;font-family:sans-serif;"><h2>アクセス権限がありません</h2><p>専用のURL（合言葉付き）からアクセスしてください。</p></div>');
+                document.close();
+                window.stop();
+            }
+        })();
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ヒヤリハット報告アプリ（デイサービス版）</title>
+    <style>
+        /* --------------------------------------------------
+     CSS: デザイン設定
+  -------------------------------------------------- */
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* タブメニュー */
+        .tab-menu {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            background: #e0e0e0;
+            font-size: 16px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background-color: #d0d0d0;
+        }
+
+        /* 画面コンテナ */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .container.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* 入力フォーム */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        /* 必須マーク */
+        .required {
+            color: red;
+            margin-left: 3px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="datetime-local"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        /* チェックボックスグループのスタイル */
+        .checkbox-container {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            flex-wrap: wrap;
+            /* スマホ対応 */
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        /* その他の入力欄 */
+        .other-input {
+            margin-left: 10px;
+            padding: 5px;
+            width: 200px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Polishing Area */
+        .polish-source {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #ccc;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* ボタン共通スタイル */
+        .action-btn {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            text-align: center;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+        }
+
+        .action-btn:hover {
+            background-color: #218838;
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-next {
+            background-color: #007bff;
+        }
+
+        .btn-next:hover {
+            background-color: #0069d9;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        /* 統計タブ */
+        .stats-info {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+        }
+
+        /* --------------------------------------------------
+     CSS: 印刷用設定
+  -------------------------------------------------- */
+        .print-sheet {
+            display: none;
+        }
+
+        @media print {
+
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .tab-menu,
+            .container {
+                display: none !important;
+            }
+
+            .print-sheet {
+                display: block !important;
+                width: 100%;
+                padding: 10mm;
+                box-sizing: border-box;
+                font-size: 11pt;
+                font-family: "Mincho", serif;
+            }
+
+            h1.report-title {
+                text-align: center;
+                border-bottom: 2px solid #000;
+                margin-bottom: 15px;
+                font-size: 18pt;
+            }
+
+            table.report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 10px;
+            }
+
+            table.report-table th,
+            table.report-table td {
+                border: 1px solid #000;
+                padding: 6px 8px;
+                vertical-align: top;
+            }
+
+            table.report-table th {
+                background-color: #f0f0f0 !important;
+                width: 20%;
+                text-align: left;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold;
+            }
+
+            .section-header {
+                background-color: #ddd !important;
+                text-align: center;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 4px;
+                border: 1px solid #000;
+                margin-top: 10px;
+                border-bottom: none;
+            }
+
+            .footer-sign {
+                margin-top: 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 20px;
+            }
+
+            .sign-box {
+                border: 1px solid #000;
+                width: 80px;
+                height: 80px;
+                display: flex;
+                flex-direction: column;
+                padding: 5px;
+                font-size: 0.8em;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* ローディングオーバーレイ */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- タブメニュー -->
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchTab('input')">1. 報告入力</button>
+        <button class="tab-btn" onclick="switchTab('review')">2. ご確認・添削</button>
+        <button class="tab-btn" onclick="switchTab('stats')">3. 統計データ</button>
+    </div>
+
+    <!-- 【画面1】入力フォーム -->
+    <div id="tab-input" class="container active">
+        <h2>ヒヤリハット報告 (入力)</h2>
+        <form id="inputForm">
+
+            <!-- 基本情報 -->
+            <div class="input-group">
+                <label>報告日 <span class="required">*</span></label>
+                <input type="date" id="in-report-date">
+            </div>
+            <div class="input-group">
+                <label>発生日時 <span class="required">*</span></label>
+                <input type="datetime-local" id="in-occurrence-date">
+            </div>
+            <div class="input-group">
+                <label>報告者氏名 <span class="required">*</span></label>
+                <input type="text" id="in-reporter" placeholder="山田 太郎">
+            </div>
+
+            <!-- 発生場所 (記述式) -->
+            <div class="input-group">
+                <label>発生場所</label>
+                <textarea id="in-place" placeholder="詳細な場所を記入してください" style="height: 60px;"></textarea>
+            </div>
+
+            <!-- 対象者 -->
+            <div class="input-group">
+                <label>利用者ID (任意)</label>
+                <input type="text" id="in-userid" placeholder="12345">
+            </div>
+
+            <!-- 概要・詳細 -->
+            <div class="input-group">
+                <label>事象の概要 (タイトル)</label>
+                <input type="text" id="in-overview" placeholder="例：送迎車乗車時のふらつき">
+            </div>
+            <div class="input-group">
+                <label>状況説明 (詳細) <span class="required">*</span></label>
+                <textarea id="in-situation" placeholder="いつ、どこで、誰が、どうした..."></textarea>
+            </div>
+
+            <!-- 分類 (複数選択可) -->
+            <div class="input-group">
+                <label>事象の種類 (複数選択可)</label>
+                <div class="checkbox-container" id="in-type-group">
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="送迎のトラブル"> 送迎のトラブル</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="転倒・転落"> 転倒・転落</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="誤薬"> 誤薬</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="食事介助ミス"> 食事介助ミス</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="レクリエーション中の事故">
+                        レクリエーション中の事故</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="排泄介助ミス"> 排泄介助ミス</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="入浴介助ミス"> 入浴介助ミス</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="感染対策不備"> 感染対策不備</label>
+                    <label class="checkbox-item"><input type="checkbox" name="type" value="コミュニケーション不足">
+                        コミュニケーション不足</label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="type" value="その他"> その他:
+                        <input type="text" class="other-input" placeholder="詳細">
+                    </label>
+                </div>
+            </div>
+
+            <!-- 背景要因 (複数選択可) -->
+            <div class="input-group">
+                <label>背景要因 (複数選択可)</label>
+                <div class="checkbox-container" id="in-background-group">
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="人的：不注意・確認不足">
+                        人的：不注意・確認不足</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="人的：教育・確認不足"> 人的：教育・確認不足</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="環境：照明不足・床の滑り・段差">
+                        環境：照明不足・床の滑り・段差</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="環境：騒音・混雑・スペース不足">
+                        環境：騒音・混雑・スペース不足</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="手順：マニュアル未遵守・省略">
+                        手順：マニュアル未遵守・省略</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="管理：人員不足・過密スケジュール">
+                        管理：人員不足・過密スケジュール</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="利用者：認知症・せん妄・協力困難">
+                        利用者：認知症・せん妄・協力困難</label>
+                    <label class="checkbox-item"><input type="checkbox" name="bg" value="利用者：身体的機能低下・急変">
+                        利用者：身体的機能低下・急変</label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="bg" value="その他"> その他:
+                        <input type="text" class="other-input" placeholder="詳細">
+                    </label>
+                </div>
+            </div>
+
+            <!-- リスク評価 (単一選択) -->
+            <div class="input-group">
+                <label>潜在的な危険度</label>
+                <select id="in-risk-level">
+                    <option value="1">1 (低)</option>
+                    <option value="2">2（中）</option>
+                    <option value="3">3（高）</option>
+                    <option value="4">4 (致命的)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>発生頻度</label>
+                <select id="in-frequency">
+                    <option value="1">1 (まれ)</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4 (極めて頻繁)</option>
+                </select>
+            </div>
+
+            <!-- 対策 (複数選択可) -->
+            <div class="input-group">
+                <label>直後の対応 (複数選択可)</label>
+                <div class="checkbox-container" id="in-response-group">
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="利用者の安全確保"> 利用者の安全確保</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="バイタル確認・状態観察">
+                        バイタル確認・状態観察</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="看護師・上長への報告">
+                        看護師・上長への報告</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="医師への連絡・指示受け">
+                        医師への連絡・指示受け</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="薬剤・食事の再確認・中止">
+                        薬剤・食事の再確認・中止</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="機器の点検・使用停止">
+                        機器の点検・使用停止</label>
+                    <label class="checkbox-item"><input type="checkbox" name="resp" value="インシデント共有"> インシデント共有</label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="resp" value="その他"> その他:
+                        <input type="text" class="other-input" placeholder="詳細">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>再発防止策 (複数選択可)</label>
+                <div class="checkbox-container" id="in-prevention-group">
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="送迎時の安全確認強化">
+                        送迎時の安全確認強化</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="声掛け・確認の徹底"> 声掛け・確認の徹底</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="ダブルチェック導入"> ダブルチェック導入</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="介助手順の見直し・標準化">
+                        介助手順の見直し・標準化</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="福祉用具の点検・設備強化">
+                        福祉用具の点検・設備強化</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="環境設備"> 環境設備</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="教育・研修"> 教育・研修</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="コミュニケーション強化">
+                        コミュニケーション強化</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="レクリエーション安全対策">
+                        レクリエーション安全対策</label>
+                    <label class="checkbox-item"><input type="checkbox" name="prev" value="ヒヤリハット共有会・振り返り">
+                        ヒヤリハット共有会・振り返り</label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="prev" value="その他"> その他:
+                        <input type="text" class="other-input" placeholder="詳細">
+                    </label>
+                </div>
+            </div>
+
+            <!-- その他 -->
+            <div class="input-group">
+                <label>詳細な原因分析・補足 (任意)</label>
+                <textarea id="in-detailed-cause" placeholder="補足があれば記入"></textarea>
+            </div>
+            <div class="input-group">
+                <label>追加の観察・対応内容 (任意)</label>
+                <textarea id="in-additional-obs"></textarea>
+            </div>
+            <div class="input-group">
+                <label>利用者・家族への説明 (記述式) <span class="required">*</span></label>
+                <textarea id="in-family-expl" placeholder="誰に、いつ、どのように説明したか。または「不要」の理由など"
+                    style="height: 60px;"></textarea>
+            </div>
+            <div class="input-group">
+                <label>担当者 (記入者)</label>
+                <input type="text" id="in-incharge">
+            </div>
+
+            <div class="nav-btns">
+                <button type="button" class="nav-btn btn-next" onclick="goToReview()">次へ：内容確認・添削</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 【画面2】確認・添削 -->
+    <div id="tab-review" class="container">
+        <h2>内容のご確認・文章の調整 (添削)</h2>
+        <p style="background:#eef; padding:10px; border-radius:5px;">
+            💡 <strong>印刷・提出用に文章を整えてください。</strong><br>
+            下の入力欄（白いボックス）の内容が、印刷およびGoogleフォームへの送信に使用されます。<br>
+            AI補正はできませんが、ご自身で分かりやすい表現に書き換えることができます。
+        </p>
+
+        <form id="submissionForm" onsubmit="submitToGoogleForm(event)">
+            <!-- 記述項目 -->
+
+            <h3>状況説明</h3>
+            <div class="polish-source">元の入力: <span id="disp-situation"></span></div>
+            <textarea id="polish-situation" class="polished-input"></textarea>
+
+            <!-- 選択項目の確認 (添削不可) -->
+            <h3>選択・記述項目の確認</h3>
+            <div class="polish-source">
+                <strong>発生場所:</strong> <span id="disp-place"></span>
+            </div>
+            <div class="polish-source">
+                <strong>事象の種類:</strong> <span id="disp-type"></span>
+            </div>
+            <div class="polish-source">
+                <strong>背景要因:</strong> <span id="disp-background"></span>
+            </div>
+            <div class="polish-source">
+                <strong>直後の対応:</strong> <span id="disp-response"></span>
+            </div>
+            <div class="polish-source">
+                <strong>再発防止策:</strong> <span id="disp-prevention"></span>
+            </div>
+            <div class="polish-source">
+                <strong>家族説明:</strong> <span id="disp-family-expl"></span>
+            </div>
+            <p style="font-size:0.9em; color:#666; margin-bottom:20px;">※上記項目を修正する場合は「戻る」ボタンを押してください。</p>
+
+            <div class="nav-btns">
+                <button type="button" class="nav-btn btn-back" onclick="switchTab('input')">戻る</button>
+                <button type="submit" class="action-btn">
+                    決定して印刷＆送信する
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 【画面3】統計データ表示 -->
+    <div id="tab-stats" class="container">
+        <h2>統計レポート</h2>
+
+        <div class="stats-info">
+            <p>統計グラフはGoogleスプレッドシート/フォームの機能で表示されます。</p>
+
+            <!-- 統計ページを開くボタン -->
+            <a id="analytics-link" href="#" target="_blank" class="action-btn secondary-btn">統計グラフを見る (Google)</a>
+        </div>
+    </div>
+
+    <!-- 【印刷用レイアウト】 -->
+    <div class="print-sheet" id="print-area">
+        <h1 class="report-title">ヒヤリハット報告書 (デイサービス)</h1>
+
+        <table class="report-table">
+            <tr>
+                <th>報告日</th>
+                <td id="pr-report-date"></td>
+                <th>発生日時</th>
+                <td id="pr-occurrence-date"></td>
+            </tr>
+            <tr>
+                <th>報告者</th>
+                <td id="pr-reporter"></td>
+                <th>担当者</th>
+                <td id="pr-incharge"></td>
+            </tr>
+            <tr>
+                <th>発生場所</th>
+                <td id="pr-place" colspan="3" style="white-space: pre-wrap;"></td>
+            </tr>
+            <tr>
+                <th>利用者ID</th>
+                <td id="pr-userid"></td>
+                <th>種類</th>
+                <td id="pr-type"></td>
+            </tr>
+        </table>
+
+        <div class="section-header">事象の詳細</div>
+        <table class="report-table">
+            <tr>
+                <th>概要</th>
+                <td id="pr-overview" colspan="3"></td>
+            </tr>
+            <tr>
+                <th style="height:100px;">状況詳細</th>
+                <td id="pr-situation" colspan="3" style="white-space: pre-wrap;"></td>
+            </tr>
+            <tr>
+                <th>危険度/頻度</th>
+                <td id="pr-risk-freq"></td>
+                <th>背景要因</th>
+                <td id="pr-background"></td>
+            </tr>
+        </table>
+
+        <div class="section-header">分析・対応</div>
+        <table class="report-table">
+            <tr>
+                <th style="height:60px;">直後の対応</th>
+                <td id="pr-response" colspan="3" style="white-space: pre-wrap;"></td>
+            </tr>
+            <tr>
+                <th style="height:60px;">再発防止策</th>
+                <td id="pr-prevention" colspan="3" style="white-space: pre-wrap;"></td>
+            </tr>
+            <tr>
+                <th>利用者・<br>家族への説明</th>
+                <td id="pr-family-expl" colspan="3" style="white-space: pre-wrap;"></td>
+            </tr>
+            <tr>
+                <th>補足・<br>詳細分析</th>
+                <td id="pr-detailed-cause" colspan="3"></td>
+            </tr>
+            <tr>
+                <th>追加観察</th>
+                <td id="pr-additional-obs" colspan="3"></td>
+            </tr>
+        </table>
+
+        <div class="footer-sign">
+            <div class="sign-box">施設長</div>
+            <div class="sign-box">管理者</div>
+            <div class="sign-box">上長</div>
+        </div>
+    </div>
+
+    <!-- ローディングオーバーレイ -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-message">送信中...</div>
+    </div>
+
+    <!-- 送信用隠しiframe -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+    <script>
+        // =========================================================
+        // 設定
+        // =========================================================
+
+        const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc5UrkqyPX5T2AOvr5QkigprnENhDMuxYD0tRintMFzMl-B5Q/formResponse";
+        const GOOGLE_ANALYTICS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc5UrkqyPX5T2AOvr5QkigprnENhDMuxYD0tRintMFzMl-B5Q/viewanalytics";
+
+        const FIELD_MAP = {
+            reportDate: "entry.588266897",
+            occurrenceDate: "entry.1338291795",
+            reporter: "entry.1897537616",
+            place: "entry.838115658",
+            userId: "entry.447475234",
+            overview: "entry.1638599617",
+            situation: "entry.174010907",
+            type: "entry.1009107485",
+            background: "entry.280429352",
+            riskLevel: "entry.1349694909",
+            frequency: "entry.1117417637",
+            response: "entry.549134117",
+            prevention: "entry.191456537",
+            detailedCause: "entry.995379326",
+            additionalObs: "entry.416335453",
+            familyExpl: "entry.769419162",
+            incharge: "entry.1697877680"
+        };
+
+        // =========================================================
+        // ロジック
+        // =========================================================
+
+        window.onload = function () {
+            document.getElementById('analytics-link').href = GOOGLE_ANALYTICS_URL;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('in-report-date').value = today;
+        };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            const btns = document.querySelectorAll('.tab-btn');
+            for (let btn of btns) {
+                if (btn.getAttribute('onclick').includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            }
+            window.scrollTo(0, 0);
+        }
+
+        // 画面表示用：カッコ付きで表示
+        function getCheckedValuesWithOther(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return [];
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            let results = [];
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    if (cb.value === "その他") {
+                        const otherText = cb.parentNode.querySelector('.other-input');
+                        const textVal = otherText ? otherText.value.trim() : "";
+                        if (textVal) {
+                            results.push("その他(" + textVal + ")");
+                        } else {
+                            results.push("その他");
+                        }
+                    } else {
+                        results.push(cb.value);
+                    }
+                }
+            });
+            return results;
+        }
+
+        window.onbeforeprint = function () {
+            preparePrint();
+        };
+
+        function goToReview() {
+            document.getElementById('disp-situation').innerText = document.getElementById('in-situation').value;
+            document.getElementById('disp-place').innerText = document.getElementById('in-place').value;
+            document.getElementById('disp-family-expl').innerText = document.getElementById('in-family-expl').value;
+
+            document.getElementById('disp-type').innerText = getCheckedValuesWithOther('in-type-group').join(', ') || '(未選択)';
+            document.getElementById('disp-background').innerText = getCheckedValuesWithOther('in-background-group').join(', ') || '(未選択)';
+            document.getElementById('disp-response').innerText = getCheckedValuesWithOther('in-response-group').join(', ') || '(未選択)';
+            document.getElementById('disp-prevention').innerText = getCheckedValuesWithOther('in-prevention-group').join(', ') || '(未選択)';
+
+            const polSit = document.getElementById('polish-situation');
+            if (!polSit.value) polSit.value = document.getElementById('in-situation').value;
+
+            switchTab('review');
+        }
+
+        function preparePrint() {
+            document.getElementById('pr-report-date').innerText = document.getElementById('in-report-date').value;
+            const occDate = document.getElementById('in-occurrence-date').value;
+            document.getElementById('pr-occurrence-date').innerText = occDate ? occDate.replace('T', ' ') : '';
+
+            document.getElementById('pr-reporter').innerText = document.getElementById('in-reporter').value;
+            document.getElementById('pr-incharge').innerText = document.getElementById('in-incharge').value;
+
+            document.getElementById('pr-place').innerText = document.getElementById('in-place').value;
+            document.getElementById('pr-userid').innerText = document.getElementById('in-userid').value;
+            document.getElementById('pr-family-expl').innerText = document.getElementById('in-family-expl').value;
+
+            document.getElementById('pr-overview').innerText = document.getElementById('in-overview').value;
+            document.getElementById('pr-type').innerText = getCheckedValuesWithOther('in-type-group').join(', ');
+
+            document.getElementById('pr-situation').innerText = document.getElementById('polish-situation').value || document.getElementById('in-situation').value;
+
+            document.getElementById('pr-response').innerText = getCheckedValuesWithOther('in-response-group').join(', ');
+            document.getElementById('pr-prevention').innerText = getCheckedValuesWithOther('in-prevention-group').join(', ');
+
+            document.getElementById('pr-risk-freq').innerText =
+                (document.getElementById('in-risk-level').value || '-') + " / " + (document.getElementById('in-frequency').value || '-');
+
+            document.getElementById('pr-background').innerText = getCheckedValuesWithOther('in-background-group').join(', ');
+            document.getElementById('pr-detailed-cause').innerText = document.getElementById('in-detailed-cause').value;
+            document.getElementById('pr-additional-obs').innerText = document.getElementById('in-additional-obs').value;
+        }
+
+        var submitted = false;
+        function submitToGoogleForm(e) {
+            e.preventDefault();
+
+            // 1. ネットワーク確認
+            if (!navigator.onLine) {
+                alert("インターネットに接続されていません。\n接続を確認してから再度お試しください。");
+                return;
+            }
+
+            preparePrint();
+
+            // 2. ローディング表示
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+            submitted = false;
+
+            // 3. タイムアウト設定 (15秒)
+            const timeoutId = setTimeout(() => {
+                if (!submitted) {
+                    overlay.style.display = 'none';
+                    alert("送信に失敗した可能性があります（タイムアウト）。\n電波の良い場所で再度お試しいただくか、管理者にご連絡ください。");
+                }
+            }, 15000);
+
+            // 隠しiframeのonloadで成功検知
+            const iframe = document.getElementById('hidden_iframe');
+            iframe.onload = function () {
+                if (submitted) { // 二重発火防止
+                    return;
+                }
+                clearTimeout(timeoutId);
+                submitted = true;
+                overlay.style.display = 'none';
+
+                // 少し待ってからアラート
+                setTimeout(() => {
+                    alert('送信完了しました！印刷画面へ進みます。');
+                    window.print();
+                    // iframeのonloadリスナーを解除すべきだが、ページリロードしないならこのままでも良い
+                }, 100);
+            };
+
+            const rawForm = document.createElement("form");
+            rawForm.action = GOOGLE_FORM_ACTION_URL;
+            rawForm.method = "POST";
+            rawForm.target = "hidden_iframe";
+            rawForm.style.display = "none";
+
+            // ★「その他」の詳細テキストを抽出して、詳細原因欄に追記するロジック
+            let otherDetails = [];
+            function collectOtherDetails(containerId, labelName) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    if (cb.checked && cb.value === "その他") {
+                        const otherText = cb.parentNode.querySelector('.other-input');
+                        if (otherText && otherText.value.trim()) {
+                            otherDetails.push(`【${labelName}のその他】${otherText.value.trim()}`);
+                        }
+                    }
+                });
+            }
+            collectOtherDetails('in-type-group', '種類');
+            collectOtherDetails('in-background-group', '背景');
+            collectOtherDetails('in-response-group', '直後対応');
+            collectOtherDetails('in-prevention-group', '防止策');
+
+            // 詳細原因欄に結合
+            let finalDetailedCause = document.getElementById('in-detailed-cause').value;
+            if (otherDetails.length > 0) {
+                finalDetailedCause += "\n\n" + otherDetails.join("\n");
+            }
+
+            const data = {
+                [FIELD_MAP.reportDate]: document.getElementById('in-report-date').value,
+                [FIELD_MAP.occurrenceDate]: document.getElementById('in-occurrence-date').value.replace('T', ' '),
+                [FIELD_MAP.reporter]: document.getElementById('in-reporter').value,
+                [FIELD_MAP.place]: document.getElementById('in-place').value,
+                [FIELD_MAP.userId]: document.getElementById('in-userid').value,
+                [FIELD_MAP.overview]: document.getElementById('in-overview').value,
+                [FIELD_MAP.riskLevel]: document.getElementById('in-risk-level').value,
+                [FIELD_MAP.frequency]: document.getElementById('in-frequency').value,
+
+                // ここに追記済みの詳細を入れる
+                [FIELD_MAP.detailedCause]: finalDetailedCause,
+
+                [FIELD_MAP.additionalObs]: document.getElementById('in-additional-obs').value,
+                [FIELD_MAP.familyExpl]: document.getElementById('in-family-expl').value,
+                [FIELD_MAP.incharge]: document.getElementById('in-incharge').value,
+                [FIELD_MAP.situation]: document.getElementById('polish-situation').value || document.getElementById('in-situation').value,
+            };
+
+            for (const [key, value] of Object.entries(data)) {
+                if (key) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = value || "";
+                    rawForm.appendChild(input);
+                }
+            }
+
+            // チェックボックス送信用（個別に送ることでチェックボックス型に対応）
+            function appendMultiValuesSafe(fieldId, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = fieldId;
+                        // valueはそのまま送る（その他も「その他」として送る）
+                        input.value = cb.value;
+                        rawForm.appendChild(input);
+                    }
+                });
+            }
+
+            appendMultiValuesSafe(FIELD_MAP.type, 'in-type-group');
+            appendMultiValuesSafe(FIELD_MAP.background, 'in-background-group');
+            appendMultiValuesSafe(FIELD_MAP.response, 'in-response-group');
+            appendMultiValuesSafe(FIELD_MAP.prevention, 'in-prevention-group');
+
+            document.body.appendChild(rawForm);
+
+            // 送信
+            rawForm.submit();
+            document.body.removeChild(rawForm);
+        }
+    </script>
+</body>
+
+</html>
