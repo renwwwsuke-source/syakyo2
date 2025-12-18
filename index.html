@@ -877,14 +877,67 @@
                 }
                 clearTimeout(timeoutId);
                 submitted = true;
-                overlay.style.display = 'none';
 
-                // 少し待ってからアラート
-                setTimeout(() => {
-                    alert('送信完了しました！印刷画面へ進みます。');
+                // 送信成功時の表示変更 (自動印刷ではなく手動ボタン表示)
+                const spinner = document.querySelector('.spinner');
+                const msg = document.getElementById('loading-message');
+
+                if (spinner) spinner.style.display = 'none';
+                if (msg) {
+                    msg.innerHTML = '<span style="color:#28a745; font-size:1.2em;">送信完了しました</span><br><span style="font-size:0.8em; font-weight:normal;">下のボタンから印刷してください</span>';
+                }
+
+                // 印刷ボタン・閉じるボタンのコンテナ作成
+                let btnContainer = document.getElementById('success-btn-container');
+                if (!btnContainer) {
+                    btnContainer = document.createElement('div');
+                    btnContainer.id = 'success-btn-container';
+                    btnContainer.style.marginTop = '20px';
+                    btnContainer.style.display = 'flex';
+                    btnContainer.style.flexDirection = 'column';
+                    btnContainer.style.gap = '10px';
+                    overlay.appendChild(btnContainer);
+                }
+
+                btnContainer.innerHTML = ''; // クリア
+
+                // 印刷ボタン
+                const printBtn = document.createElement('button');
+                printBtn.innerText = '印刷する (PDF保存)';
+                printBtn.style.padding = '12px 24px';
+                printBtn.style.fontSize = '18px';
+                printBtn.style.fontWeight = 'bold';
+                printBtn.style.color = '#fff';
+                printBtn.style.backgroundColor = '#007bff';
+                printBtn.style.border = 'none';
+                printBtn.style.borderRadius = '30px';
+                printBtn.style.cursor = 'pointer';
+                printBtn.onclick = function () {
                     window.print();
-                    // iframeのonloadリスナーを解除すべきだが、ページリロードしないならこのままでも良い
-                }, 100);
+                };
+                btnContainer.appendChild(printBtn);
+
+                // 閉じるボタン
+                const closeBtn = document.createElement('button');
+                closeBtn.innerText = '閉じる';
+                closeBtn.style.padding = '10px 20px';
+                closeBtn.style.fontSize = '16px';
+                closeBtn.style.color = '#555';
+                closeBtn.style.backgroundColor = '#e0e0e0';
+                closeBtn.style.border = 'none';
+                closeBtn.style.borderRadius = '30px';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.onclick = function () {
+                    overlay.style.display = 'none';
+                    // 必要ならフォームリセットやトップへ戻る処理など
+                    // ここではオーバーレイを閉じるのみ
+
+                    // 次の送信のためにspinner等を元に戻しておく
+                    if (spinner) spinner.style.display = 'block';
+                    if (msg) msg.innerText = '送信中...';
+                    if (btnContainer) btnContainer.remove();
+                };
+                btnContainer.appendChild(closeBtn);
             };
 
             const rawForm = document.createElement("form");
