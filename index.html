@@ -264,7 +264,8 @@
             }
 
             .tab-menu,
-            .container {
+            .container,
+            #loading-overlay {
                 display: none !important;
             }
 
@@ -913,6 +914,8 @@
                 printBtn.style.borderRadius = '30px';
                 printBtn.style.cursor = 'pointer';
                 printBtn.onclick = function () {
+                    // モバイル等でプリントダイアログが裏に行かないようにフォーカスを当てる
+                    window.focus();
                     window.print();
                 };
                 btnContainer.appendChild(printBtn);
