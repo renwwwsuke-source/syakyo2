@@ -14,7 +14,6 @@
             }
         })();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ヒヤリハット報告アプリ（デイサービス版）</title>
@@ -905,32 +904,6 @@
             document.getElementById('pr-additional-obs').innerText = document.getElementById('in-additional-obs').value;
         }
 
-        function downloadPDF() {
-            // PDF生成のために一時的に表示
-            const element = document.getElementById('print-area');
-            const originalDisplay = element.style.display;
-            element.style.display = 'block';
-
-            // html2pdfオプション
-            const opt = {
-                margin: 0,
-                filename: 'hiyari_report_' + new Date().toISOString().slice(0, 10) + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // 生成実行
-            html2pdf().set(opt).from(element).save().then(() => {
-                // 生成後に戻す
-                element.style.display = originalDisplay;
-            }).catch(err => {
-                console.error(err);
-                alert('PDF生成に失敗しました。');
-                element.style.display = originalDisplay;
-            });
-        }
-
         var submitted = false;
         function submitToGoogleForm(e) {
             e.preventDefault();
@@ -988,27 +961,11 @@
 
                 btnContainer.innerHTML = ''; // クリア
 
-                // PDFダウンロードボタン (スマホ対応)
-                const pdfBtn = document.createElement('button');
-                pdfBtn.innerText = 'PDFをダウンロード (スマホ推奨)';
-                pdfBtn.style.padding = '12px 24px';
-                pdfBtn.style.fontSize = '18px';
-                pdfBtn.style.fontWeight = 'bold';
-                pdfBtn.style.color = '#fff';
-                pdfBtn.style.backgroundColor = '#17a2b8'; // Blue-info color
-                pdfBtn.style.border = 'none';
-                pdfBtn.style.borderRadius = '30px';
-                pdfBtn.style.cursor = 'pointer';
-                pdfBtn.onclick = function () {
-                    downloadPDF();
-                };
-                btnContainer.appendChild(pdfBtn);
-
-                // 印刷ボタン (PC推奨)
+                // 印刷ボタン
                 const printBtn = document.createElement('button');
-                printBtn.innerText = '印刷する (PC)';
+                printBtn.innerText = '印刷する (PDF保存)';
                 printBtn.style.padding = '12px 24px';
-                printBtn.style.fontSize = '16px';
+                printBtn.style.fontSize = '18px';
                 printBtn.style.fontWeight = 'bold';
                 printBtn.style.color = '#fff';
                 printBtn.style.backgroundColor = '#007bff';
