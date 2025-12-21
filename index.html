@@ -14,6 +14,7 @@
             }
         })();
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ヒヤリハット報告アプリ（デイサービス版）</title>
@@ -411,19 +412,19 @@
 
             <!-- 発生場所 (記述式) -->
             <div class="input-group">
-                <label>発生場所</label>
+                <label>発生場所 <span class="required">*</span></label>
                 <textarea id="in-place" placeholder="詳細な場所を記入してください" style="height: 60px;"></textarea>
             </div>
 
             <!-- 対象者 -->
             <div class="input-group">
-                <label>利用者ID (任意)</label>
+                <label>利用者ID <span class="required">*</span></label>
                 <input type="text" id="in-userid" placeholder="12345">
             </div>
 
             <!-- 概要・詳細 -->
             <div class="input-group">
-                <label>事象の概要 (タイトル)</label>
+                <label>事象の概要 (タイトル) <span class="required">*</span></label>
                 <input type="text" id="in-overview" placeholder="例：送迎車乗車時のふらつき">
             </div>
             <div class="input-group">
@@ -433,7 +434,7 @@
 
             <!-- 分類 (複数選択可) -->
             <div class="input-group">
-                <label>事象の種類 (複数選択可)</label>
+                <label>事象の種類 (複数選択可) <span class="required">*</span></label>
                 <div class="checkbox-container" id="in-type-group">
                     <label class="checkbox-item"><input type="checkbox" name="type" value="送迎のトラブル"> 送迎のトラブル</label>
                     <label class="checkbox-item"><input type="checkbox" name="type" value="転倒・転落"> 転倒・転落</label>
@@ -455,7 +456,7 @@
 
             <!-- 背景要因 (複数選択可) -->
             <div class="input-group">
-                <label>背景要因 (複数選択可)</label>
+                <label>背景要因 (複数選択可) <span class="required">*</span></label>
                 <div class="checkbox-container" id="in-background-group">
                     <label class="checkbox-item"><input type="checkbox" name="bg" value="人的：不注意・確認不足">
                         人的：不注意・確認不足</label>
@@ -481,7 +482,7 @@
 
             <!-- リスク評価 (単一選択) -->
             <div class="input-group">
-                <label>潜在的な危険度</label>
+                <label>潜在的な危険度 <span class="required">*</span></label>
                 <select id="in-risk-level">
                     <option value="1">1 (低)</option>
                     <option value="2">2（中）</option>
@@ -490,7 +491,7 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>発生頻度</label>
+                <label>発生頻度 <span class="required">*</span></label>
                 <select id="in-frequency">
                     <option value="1">1 (まれ)</option>
                     <option value="2">2</option>
@@ -501,7 +502,7 @@
 
             <!-- 対策 (複数選択可) -->
             <div class="input-group">
-                <label>直後の対応 (複数選択可)</label>
+                <label>直後の対応 (複数選択可) <span class="required">*</span></label>
                 <div class="checkbox-container" id="in-response-group">
                     <label class="checkbox-item"><input type="checkbox" name="resp" value="利用者の安全確保"> 利用者の安全確保</label>
                     <label class="checkbox-item"><input type="checkbox" name="resp" value="バイタル確認・状態観察">
@@ -523,7 +524,7 @@
             </div>
 
             <div class="input-group">
-                <label>再発防止策 (複数選択可)</label>
+                <label>再発防止策 (複数選択可) <span class="required">*</span></label>
                 <div class="checkbox-container" id="in-prevention-group">
                     <label class="checkbox-item"><input type="checkbox" name="prev" value="送迎時の安全確認強化">
                         送迎時の安全確認強化</label>
@@ -563,7 +564,7 @@
                     style="height: 60px;"></textarea>
             </div>
             <div class="input-group">
-                <label>担当者 (記入者)</label>
+                <label>担当者 (記入者) <span class="required">*</span></label>
                 <input type="text" id="in-incharge">
             </div>
 
@@ -799,9 +800,68 @@
 
         window.onbeforeprint = function () {
             preparePrint();
+            preparePrint();
         };
 
+        function validateInput() {
+            let errors = [];
+            const requiredFields = [
+                { id: 'in-report-date', label: '報告日' },
+                { id: 'in-occurrence-date', label: '発生日時' },
+                { id: 'in-reporter', label: '報告者氏名' },
+                { id: 'in-place', label: '発生場所' },
+                { id: 'in-userid', label: '利用者ID' },
+                { id: 'in-overview', label: '事象の概要' },
+                { id: 'in-situation', label: '状況説明' },
+                { id: 'in-family-expl', label: '利用者・家族への説明' },
+                { id: 'in-incharge', label: '担当者' },
+                { id: 'in-risk-level', label: '潜在的な危険度' },
+                { id: 'in-frequency', label: '発生頻度' }
+            ];
+
+            // Reset styles
+            document.querySelectorAll('.input-group input, .input-group textarea, .input-group select, .checkbox-container').forEach(el => {
+                el.style.border = '1px solid #ddd';
+            });
+
+            // Text/Date/Select validation
+            requiredFields.forEach(field => {
+                const el = document.getElementById(field.id);
+                if (!el.value.trim()) {
+                    errors.push(field.label);
+                    el.style.border = '2px solid red';
+                }
+            });
+
+            // Checkbox validation
+            const checkboxGroups = [
+                { id: 'in-type-group', label: '事象の種類' },
+                { id: 'in-background-group', label: '背景要因' },
+                { id: 'in-response-group', label: '直後の対応' },
+                { id: 'in-prevention-group', label: '再発防止策' }
+            ];
+
+            checkboxGroups.forEach(group => {
+                const container = document.getElementById(group.id);
+                const checked = container.querySelectorAll('input[type="checkbox"]:checked');
+                if (checked.length === 0) {
+                    errors.push(group.label);
+                    container.style.border = '2px solid red';
+                }
+            });
+
+            if (errors.length > 0) {
+                alert('以下の必須項目が入力されていません:\n・' + errors.join('\n・'));
+                return false;
+            }
+            return true;
+        }
+
         function goToReview() {
+            if (!validateInput()) {
+                return;
+            }
+
             document.getElementById('disp-situation').innerText = document.getElementById('in-situation').value;
             document.getElementById('disp-place').innerText = document.getElementById('in-place').value;
             document.getElementById('disp-family-expl').innerText = document.getElementById('in-family-expl').value;
@@ -843,6 +903,32 @@
             document.getElementById('pr-background').innerText = getCheckedValuesWithOther('in-background-group').join(', ');
             document.getElementById('pr-detailed-cause').innerText = document.getElementById('in-detailed-cause').value;
             document.getElementById('pr-additional-obs').innerText = document.getElementById('in-additional-obs').value;
+        }
+
+        function downloadPDF() {
+            // PDF生成のために一時的に表示
+            const element = document.getElementById('print-area');
+            const originalDisplay = element.style.display;
+            element.style.display = 'block';
+
+            // html2pdfオプション
+            const opt = {
+                margin: 0,
+                filename: 'hiyari_report_' + new Date().toISOString().slice(0, 10) + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // 生成実行
+            html2pdf().set(opt).from(element).save().then(() => {
+                // 生成後に戻す
+                element.style.display = originalDisplay;
+            }).catch(err => {
+                console.error(err);
+                alert('PDF生成に失敗しました。');
+                element.style.display = originalDisplay;
+            });
         }
 
         var submitted = false;
@@ -902,11 +988,27 @@
 
                 btnContainer.innerHTML = ''; // クリア
 
-                // 印刷ボタン
+                // PDFダウンロードボタン (スマホ対応)
+                const pdfBtn = document.createElement('button');
+                pdfBtn.innerText = 'PDFをダウンロード (スマホ推奨)';
+                pdfBtn.style.padding = '12px 24px';
+                pdfBtn.style.fontSize = '18px';
+                pdfBtn.style.fontWeight = 'bold';
+                pdfBtn.style.color = '#fff';
+                pdfBtn.style.backgroundColor = '#17a2b8'; // Blue-info color
+                pdfBtn.style.border = 'none';
+                pdfBtn.style.borderRadius = '30px';
+                pdfBtn.style.cursor = 'pointer';
+                pdfBtn.onclick = function () {
+                    downloadPDF();
+                };
+                btnContainer.appendChild(pdfBtn);
+
+                // 印刷ボタン (PC推奨)
                 const printBtn = document.createElement('button');
-                printBtn.innerText = '印刷する (PDF保存)';
+                printBtn.innerText = '印刷する (PC)';
                 printBtn.style.padding = '12px 24px';
-                printBtn.style.fontSize = '18px';
+                printBtn.style.fontSize = '16px';
                 printBtn.style.fontWeight = 'bold';
                 printBtn.style.color = '#fff';
                 printBtn.style.backgroundColor = '#007bff';
